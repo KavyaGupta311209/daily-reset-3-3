@@ -4,78 +4,180 @@
 <meta charset="UTF-8">
 <title>Daily Reset</title>
 <style>
+  * {
+    box-sizing: border-box;
+  }
   body {
-    font-family: Arial, sans-serif;
-    background: #f7f7f7;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
     margin: 0;
     padding: 20px;
-    color: #222;
+    color: #333;
   }
   .container {
-    max-width: 400px;
+    max-width: 500px;
     margin: auto;
     background: white;
-    padding: 20px;
-    border-radius: 12px;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
   }
   h1 {
     text-align: center;
-    margin-bottom: 5px;
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .settings-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
   }
   p.subtitle {
     text-align: center;
-    color: gray;
+    color: #667eea;
     font-size: 14px;
+    margin: 5px 0 20px 0;
   }
   input[type="text"], textarea, select {
     width: 100%;
-    padding: 10px;
-    margin: 6px 0;
+    padding: 12px;
+    margin: 8px 0;
     border-radius: 8px;
-    border: 1px solid #ddd;
+    border: 2px solid #e0e7ff;
+    font-family: inherit;
+    transition: border-color 0.3s;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #667eea;
   }
   textarea {
-    height: 80px;
+    height: 100px;
+    resize: vertical;
   }
   .task {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin: 10px 0;
+  }
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
   }
   button {
     width: 100%;
     padding: 12px;
-    margin-top: 10px;
+    margin-top: 15px;
     border: none;
     border-radius: 8px;
-    background: black;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
   }
   .output {
-    margin-top: 15px;
-    padding: 10px;
-    background: #f1f1f1;
+    margin-top: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #f5f2ff 100%);
     border-radius: 8px;
+    border-left: 4px solid #667eea;
+    line-height: 1.6;
+    max-height: 500px;
+    overflow-y: auto;
   }
   .mode {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin: 15px 0;
+    padding: 10px;
+    background: #f0f4ff;
+    border-radius: 8px;
+  }
+  .mode label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
   }
   .page {
     display: none;
   }
   .page.active {
     display: block;
+    animation: fadeIn 0.3s ease-in;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .page h2 {
+    color: #667eea;
+    margin-top: 0;
+  }
+  .loading {
+    text-align: center;
+    color: #667eea;
+    font-style: italic;
+  }
+  .error {
+    color: #e74c3c;
+    padding: 10px;
+    background: #fadbd8;
+    border-radius: 8px;
+    margin: 10px 0;
+  }
+  .settings-panel {
+    padding: 15px;
+    background: #f0f4ff;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #667eea;
   }
 </style>
 </head>
 
 <body>
 <div class="container">
-  <h1>Daily Reset</h1>
+  <div class="header">
+    <h1>Daily Reset</h1>
+    <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+  </div>
   <p class="subtitle">3 things. No excuses.</p>
+
+  <!-- Settings Panel -->
+  <div id="settingsPanel" style="display:none;">
+    <div class="settings-panel">
+      <h3 style="color: #667eea; margin-top: 0;">API Configuration</h3>
+      <label>OpenAI API Key:</label>
+      <input type="password" id="apiKey" placeholder="sk-..." value="">
+      <button onclick="saveApiKey()">Save API Key</button>
+      <p style="font-size: 12px; color: #666;">Your API key is stored locally in your browser. Get one at <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a></p>
+    </div>
+  </div>
 
   <!-- Page 1: Task Setup -->
   <div id="page1" class="page active">
@@ -98,20 +200,20 @@
   <!-- Page 2: Emotional Reset -->
   <div id="page2" class="page">
     <h2>Step 2: Emotional Reset</h2>
-    <label for="emotions">How are you feeling right now?</label>
+    <label for="emotions">How are you feeling right now? (select all that apply)</label>
     <select id="emotions" multiple>
-      <option value="happy">Happy</option>
-      <option value="sad">Sad</option>
-      <option value="anxious">Anxious</option>
-      <option value="angry">Angry</option>
-      <option value="motivated">Motivated</option>
-      <option value="tired">Tired</option>
-      <option value="excited">Excited</option>
-      <option value="frustrated">Frustrated</option>
-      <option value="grateful">Grateful</option>
-      <option value="overwhelmed">Overwhelmed</option>
+      <option value="happy">😊 Happy</option>
+      <option value="sad">😢 Sad</option>
+      <option value="anxious">😰 Anxious</option>
+      <option value="angry">😠 Angry</option>
+      <option value="motivated">💪 Motivated</option>
+      <option value="tired">😴 Tired</option>
+      <option value="excited">🤩 Excited</option>
+      <option value="frustrated">😤 Frustrated</option>
+      <option value="grateful">🙏 Grateful</option>
+      <option value="overwhelmed">😵 Overwhelmed</option>
     </select>
-    <textarea id="reflection" placeholder="What did you actually do today? Reflect on your day..."></textarea>
+    <textarea id="reflection" placeholder="What did you actually do today? Reflect on your day, your progress, and your feelings..."></textarea>
     <button onclick="nextPage(3)">Next: Reality Check</button>
   </div>
 
@@ -119,8 +221,8 @@
   <div id="page3" class="page">
     <h2>Step 3: Reality Check</h2>
     <div class="mode">
-      <label><input type="radio" name="mode" value="calm" checked> Calm</label>
-      <label><input type="radio" name="mode" value="strict"> Strict</label>
+      <label><input type="radio" name="mode" value="calm" checked> 🌿 Calm</label>
+      <label><input type="radio" name="mode" value="strict"> ⚡ Strict</label>
     </div>
     <button onclick="generateResponse()">Get Reality Check</button>
     <div class="output" id="output"></div>
@@ -130,6 +232,25 @@
 
 <script>
 let currentPage = 1;
+
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'block') {
+    document.getElementById('apiKey').value = localStorage.getItem('openai_api_key') || '';
+  }
+}
+
+function saveApiKey() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) {
+    alert('Please enter an API key');
+    return;
+  }
+  localStorage.setItem('openai_api_key', apiKey);
+  alert('API key saved successfully!');
+  toggleSettings();
+}
 
 function nextPage(page) {
   document.getElementById('page' + currentPage).classList.remove('active');
@@ -141,7 +262,6 @@ function resetApp() {
   document.getElementById('page3').classList.remove('active');
   currentPage = 1;
   document.getElementById('page1').classList.add('active');
-  // Reset form
   document.getElementById("t1check").checked = false;
   document.getElementById("t2check").checked = false;
   document.getElementById("t3check").checked = false;
@@ -153,79 +273,77 @@ function resetApp() {
   document.getElementById("output").innerText = "";
 }
 
-function generateResponse() {
-  let done = 0;
-  if (document.getElementById("t1check").checked) done++;
-  if (document.getElementById("t2check").checked) done++;
-  if (document.getElementById("t3check").checked) done++;
+async function generateResponse() {
+  const done = [
+    document.getElementById("t1check").checked,
+    document.getElementById("t2check").checked,
+    document.getElementById("t3check").checked
+  ].filter(c => c).length;
 
-  let mode = document.querySelector('input[name="mode"]:checked').value;
-  let reflection = document.getElementById("reflection").value.trim();
-  let emotions = Array.from(document.getElementById("emotions").selectedOptions).map(option => option.value);
-  let response = "";
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const reflection = document.getElementById("reflection").value.trim();
+  const emotions = Array.from(document.getElementById("emotions").selectedOptions).map(option => option.value);
+  const tasks = [
+    document.getElementById("t1").value.trim(),
+    document.getElementById("t2").value.trim(),
+    document.getElementById("t3").value.trim()
+  ].filter(t => t);
 
-  let emotionNote = emotions.length > 0 ? `\n\n😊 Your current emotions: ${emotions.join(', ')}\n\n` : "\n\n";
-  let reflectionNote = reflection ? `\n\n📝 Your reflection: "${reflection}"\n\n` : "\n\n";
+  const outputDiv = document.getElementById("output");
+  outputDiv.innerHTML = '<div class="loading">🤔 Generating your personalized reality check...</div>';
 
-  if (mode === "calm") {
-    if (done === 3) {
-      response = `🎉 Congratulations! You've completed all three non-negotiable tasks today. ✅ This is a powerful demonstration of discipline and commitment. When you show up fully like this, you're not just checking boxes—you're building momentum that compounds over time. 💪
-
-Think about how this completion feels. That sense of accomplishment? That's your brain rewarding you for aligning your actions with your intentions. 🌟 Keep nurturing this rhythm. Tomorrow, build on this foundation. What small adjustment could make this even smoother? Perhaps preparing your tasks the night before, or finding an accountability partner. 🤝
-
-Remember, these three tasks aren't random—they're your foundation for personal growth, productivity, and long-term success. By mastering them daily, you're creating the discipline that unlocks everything else in life. 🚀 Well done—keep going!${emotionNote}Let's address your emotions: If you're feeling ${emotions.join(' or ')}, acknowledge them and use this completion as a boost. You're capable of great things—lean into that energy.${reflectionNote}If your reflection mentions specific challenges you overcame, celebrate those wins. 🏆 If it highlights what energized you, lean into that for future days.`;
-    } else if (done === 2) {
-      response = `👍 Two out of three tasks completed— that's solid progress, but let's explore why that third one remained undone. 🤔 You know you held back a little, and that's okay to acknowledge. Sometimes it's fatigue, sometimes distraction, sometimes just the natural resistance that comes with pushing boundaries. 💪
-
-The key insight here is recognizing the pattern. Did the third task feel more daunting? Was it less urgent? Or did momentum simply fade? Use this as data for tomorrow. 📊 Break that remaining task into smaller steps, or tackle it first next time. 🎯
-
-You're capable of more than you showed today, and that's not a criticism—it's an invitation. 🌱 Reflect on what "holding back" looks like for you. Is it procrastination? Perfectionism? Fear of failure? Addressing this consciously will accelerate your growth. 📈
-
-These three tasks are crucial because they represent your core commitments—the building blocks of a purposeful life. When you complete them consistently, you build self-trust and create space for bigger achievements. 🏗️${emotionNote}Regarding your emotions (${emotions.join(', ')}), it's normal to feel mixed after partial completion. Use this as motivation to process those feelings and commit fully tomorrow.${reflectionNote}Your reflection might reveal the real story behind that unfinished task. Use it to plan better tomorrow.`;
-    } else if (done === 1) {
-      response = `👏 One task down, two to go. You started strong, which is commendable, but the follow-through faded. 💪 Starting is half the battle, but completion is where transformation happens. What shifted between the first task and the others? Energy levels? Motivation? External distractions? 🔍
-
-Be more intentional tomorrow. Before beginning, visualize completing all three. 🖼️ Set micro-deadlines. Remove distractions. Remember why these tasks matter to you—the bigger picture that makes the effort worthwhile. 🎨
-
-This isn't about beating yourself up; it's about understanding your patterns. You have the capability; it's about deploying it consistently. Small adjustments in focus and energy management can make a world of difference. ⚡
-
-Your three daily tasks are the cornerstone of your personal development. They teach you discipline, build resilience, and ensure that you're moving forward, not just spinning in place. By prioritizing them, you're investing in the most important project: yourself. 🧠${emotionNote}Your emotions (${emotions.join(', ')}) might be influencing your energy. Take time to process them—journaling or a short walk can help reset.${reflectionNote}If your reflection explains what derailed you after the first task, use that insight to create safeguards for next time.`;
-    } else {
-      response = `😌 Zero tasks completed today. This happens to everyone at some point, and it's not the end of the world—but it is a signal. 🚩 Today slipped away without the non-negotiables being addressed. No judgment here, just honest assessment: this pattern, if repeated, won't get you where you want to go. 🛤️
-
-The good news? Tomorrow is a fresh start. 🌅 Use today as motivation to reset with intention. Why did today go this way? Overwhelm? Low energy? Lack of clarity? Identify the root cause and address it proactively. 🔧
-
-Remember, these three tasks are your daily anchor— they ground you in action and prevent the drift of unfulfilled potential. Completing them isn't just about productivity; it's about honoring your word to yourself and building the life you envision. 🏛️${emotionNote}Given your emotions (${emotions.join(', ')}), today might have been tough. That's okay—use this reset to acknowledge your feelings and plan for emotional balance tomorrow.${reflectionNote}Your reflection might hold the key to why today was different. Use it to rebuild your commitment.`;
-    }
-  } else {
-    if (done === 3) {
-      response = `✅ Acceptable. You've met the minimum standard today. But remember: good enough yesterday becomes the floor for tomorrow. 📈 Excellence isn't a destination; it's a daily practice. No room for complacency. 💪
-
-What made today work? Replicate it. What almost derailed you? Eliminate it. This is your baseline now—push beyond it. Weakness shows up in the details. Stay vigilant. Execute harder tomorrow. No excuses, no exceptions. 🚫
-
-These tasks are non-negotiable for a reason: they forge your character and ensure you're not wasting your potential. Skip them, and you're just existing—not thriving. 🔥${emotionNote}Emotions (${emotions.join(', ')}) are irrelevant to execution. Control what you can—your actions. Push through.${reflectionNote}If your reflection shows any hesitation or close calls, that's your growth edge. Crush it next time.`;
-    } else if (done === 2) {
-      response = `⚠️ Two down, one left unfinished. You chose not to complete it. That's a choice with consequences. 🤷‍♂️ Was it laziness? Distraction? Fear? Own it. You know what needs to be done—finish what you start, regardless of how you feel. 🏁
-
-This half-measure approach is costing you. Momentum builds with completion, not partial effort. Tomorrow, commit fully or don't start. There's no middle ground here. You're better than this inconsistency. Step up. 💪
-
-Your three tasks represent the bare minimum for progress. They build discipline, create habits, and prevent regression. Neglect them, and you're sabotaging your own future. Don't be that person. 🛑${emotionNote}Emotions (${emotions.join(', ')}) don't excuse incomplete work. Discipline overrides feelings. Execute.${reflectionNote}Your reflection probably explains the excuse. Reject it. Finish strong tomorrow.`;
-    } else if (done === 1) {
-      response = `😤 Barely showed up. One task? That's not your level. You're capable of so much more than this minimal effort. Stop settling for scraps of progress. If you're serious about change, prove it with action, not words. 💬
-
-This pattern of partial engagement is self-sabotage. Why bother starting if you won't finish? Get real with yourself. Either commit fully or admit you're not ready. Mediocrity is comfortable, but it won't get you anywhere meaningful. 🚶‍♂️
-
-These daily tasks are your litmus test for commitment. They separate the talkers from the doers. By completing them, you're proving to yourself that you're serious about growth and achievement. Fail here, and everything else crumbles. 🧱${emotionNote}Emotions (${emotions.join(', ')}) are not an excuse for low performance. Rise above them. Act.${reflectionNote}If your reflection justifies this low bar, you're lying to yourself. Raise the standard.`;
-    } else {
-      response = `🚫 Zero. Nothing. Complete avoidance. This is failure by choice, and it's entirely on you. No excuses, no stories, no justifications. You avoided your responsibilities today, and that's unacceptable. 😠
-
-If you want different results, you have to do different things. Stop pretending. Get serious or stay stuck. The choice is yours, but inaction has consequences. Tomorrow demands better. No more hiding. 🙈
-
-These three tasks are your daily declaration of intent. They ensure you're not just dreaming but doing. Skip them consistently, and you're choosing mediocrity over mastery. Wake up. 🔥${emotionNote}Emotions (${emotions.join(', ')}) led to this failure. Take responsibility. Emotions don't control you—you do.${reflectionNote}Whatever your reflection says, it's probably an excuse. Cut the bullshit. Execute tomorrow.`;
-    }
+  const apiKey = localStorage.getItem('openai_api_key');
+  
+  if (!apiKey) {
+    outputDiv.innerHTML = '<div class="error">⚠️ Please configure your OpenAI API key first. Click the ⚙️ button above.</div>';
+    return;
   }
 
-  document.getElementById("output").innerText = response;
+  const prompt = `You are a compassionate but honest life coach providing a reality check. The user has:
+- Completed ${done} out of 3 daily tasks
+- Tasks: ${tasks.join(', ') || 'Not specified'}
+- Current emotions: ${emotions.join(', ') || 'Not specified'}
+- Mode: ${mode} (${mode === 'calm' ? 'supportive and encouraging' : 'direct and challenging'})
+- Reflection: "${reflection}"
+
+Generate a personalized, empathetic reality check (3-5 paragraphs) that:
+1. Acknowledges their emotional state
+2. Provides honest feedback about their task completion
+3. Offers specific, actionable advice
+4. Includes encouragement or challenge based on their mode
+5. Uses warm, conversational language with occasional emojis
+
+Keep the response under 400 words.`;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: 'You are a compassionate but honest life coach.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.8,
+        max_tokens: 500
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'API request failed');
+    }
+
+    const data = await response.json();
+    const aiResponse = data.choices[0].message.content;
+    outputDiv.innerHTML = aiResponse.replace(/\n/g, '<br>');
+  } catch (error) {
+    outputDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+  }
 }
 </script>
 
