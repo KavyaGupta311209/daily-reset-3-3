@@ -27,7 +27,7 @@
     color: gray;
     font-size: 14px;
   }
-  input[type="text"], textarea {
+  input[type="text"], textarea, select {
     width: 100%;
     padding: 10px;
     margin: 6px 0;
@@ -63,6 +63,12 @@
     justify-content: space-between;
     margin-bottom: 10px;
   }
+  .page {
+    display: none;
+  }
+  .page.active {
+    display: block;
+  }
 </style>
 </head>
 
@@ -71,36 +77,82 @@
   <h1>Daily Reset</h1>
   <p class="subtitle">3 things. No excuses.</p>
 
-  <div class="mode">
-    <label><input type="radio" name="mode" value="calm" checked> Calm</label>
-    <label><input type="radio" name="mode" value="strict"> Strict</label>
+  <!-- Page 1: Task Setup -->
+  <div id="page1" class="page active">
+    <h2>Step 1: Set Your Tasks</h2>
+    <div class="task">
+      <input type="checkbox" id="t1check">
+      <input type="text" id="t1" placeholder="Task 1">
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t2check">
+      <input type="text" id="t2" placeholder="Task 2">
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t3check">
+      <input type="text" id="t3" placeholder="Task 3">
+    </div>
+    <button onclick="nextPage(2)">Next: Emotional Reset</button>
   </div>
 
-  <!-- Tasks -->
-  <div class="task">
-    <input type="checkbox" id="t1check">
-    <input type="text" id="t1" placeholder="Task 1">
+  <!-- Page 2: Emotional Reset -->
+  <div id="page2" class="page">
+    <h2>Step 2: Emotional Reset</h2>
+    <label for="emotions">How are you feeling right now?</label>
+    <select id="emotions" multiple>
+      <option value="happy">Happy</option>
+      <option value="sad">Sad</option>
+      <option value="anxious">Anxious</option>
+      <option value="angry">Angry</option>
+      <option value="motivated">Motivated</option>
+      <option value="tired">Tired</option>
+      <option value="excited">Excited</option>
+      <option value="frustrated">Frustrated</option>
+      <option value="grateful">Grateful</option>
+      <option value="overwhelmed">Overwhelmed</option>
+    </select>
+    <textarea id="reflection" placeholder="What did you actually do today? Reflect on your day..."></textarea>
+    <button onclick="nextPage(3)">Next: Reality Check</button>
   </div>
 
-  <div class="task">
-    <input type="checkbox" id="t2check">
-    <input type="text" id="t2" placeholder="Task 2">
+  <!-- Page 3: Reality Check -->
+  <div id="page3" class="page">
+    <h2>Step 3: Reality Check</h2>
+    <div class="mode">
+      <label><input type="radio" name="mode" value="calm" checked> Calm</label>
+      <label><input type="radio" name="mode" value="strict"> Strict</label>
+    </div>
+    <button onclick="generateResponse()">Get Reality Check</button>
+    <div class="output" id="output"></div>
+    <button onclick="resetApp()">Start Over</button>
   </div>
-
-  <div class="task">
-    <input type="checkbox" id="t3check">
-    <input type="text" id="t3" placeholder="Task 3">
-  </div>
-
-  <!-- Reflection -->
-  <textarea id="reflection" placeholder="What did you actually do today?"></textarea>
-
-  <button onclick="generateResponse()">Get Reality Check</button>
-
-  <div class="output" id="output"></div>
 </div>
 
 <script>
+let currentPage = 1;
+
+function nextPage(page) {
+  document.getElementById('page' + currentPage).classList.remove('active');
+  currentPage = page;
+  document.getElementById('page' + currentPage).classList.add('active');
+}
+
+function resetApp() {
+  document.getElementById('page3').classList.remove('active');
+  currentPage = 1;
+  document.getElementById('page1').classList.add('active');
+  // Reset form
+  document.getElementById("t1check").checked = false;
+  document.getElementById("t2check").checked = false;
+  document.getElementById("t3check").checked = false;
+  document.getElementById("t1").value = "";
+  document.getElementById("t2").value = "";
+  document.getElementById("t3").value = "";
+  document.getElementById("emotions").selectedIndex = -1;
+  document.getElementById("reflection").value = "";
+  document.getElementById("output").innerText = "";
+}
+
 function generateResponse() {
   let done = 0;
   if (document.getElementById("t1check").checked) done++;
@@ -109,9 +161,11 @@ function generateResponse() {
 
   let mode = document.querySelector('input[name="mode"]:checked').value;
   let reflection = document.getElementById("reflection").value.trim();
+  let emotions = Array.from(document.getElementById("emotions").selectedOptions).map(option => option.value);
   let response = "";
 
-  let reflectionNote = reflection ? `\n\n📝 Based on your reflection: "${reflection}"\n\n` : "\n\n";
+  let emotionNote = emotions.length > 0 ? `\n\n😊 Your current emotions: ${emotions.join(', ')}\n\n` : "\n\n";
+  let reflectionNote = reflection ? `\n\n📝 Your reflection: "${reflection}"\n\n` : "\n\n";
 
   if (mode === "calm") {
     if (done === 3) {
@@ -119,7 +173,7 @@ function generateResponse() {
 
 Think about how this completion feels. That sense of accomplishment? That's your brain rewarding you for aligning your actions with your intentions. 🌟 Keep nurturing this rhythm. Tomorrow, build on this foundation. What small adjustment could make this even smoother? Perhaps preparing your tasks the night before, or finding an accountability partner. 🤝
 
-Remember, these three tasks aren't random—they're your foundation for personal growth, productivity, and long-term success. By mastering them daily, you're creating the discipline that unlocks everything else in life. 🚀 Well done—keep going!${reflectionNote}If your reflection mentions specific challenges you overcame, celebrate those wins. 🏆 If it highlights what energized you, lean into that for future days.`;
+Remember, these three tasks aren't random—they're your foundation for personal growth, productivity, and long-term success. By mastering them daily, you're creating the discipline that unlocks everything else in life. 🚀 Well done—keep going!${emotionNote}Let's address your emotions: If you're feeling ${emotions.join(' or ')}, acknowledge them and use this completion as a boost. You're capable of great things—lean into that energy.${reflectionNote}If your reflection mentions specific challenges you overcame, celebrate those wins. 🏆 If it highlights what energized you, lean into that for future days.`;
     } else if (done === 2) {
       response = `👍 Two out of three tasks completed— that's solid progress, but let's explore why that third one remained undone. 🤔 You know you held back a little, and that's okay to acknowledge. Sometimes it's fatigue, sometimes distraction, sometimes just the natural resistance that comes with pushing boundaries. 💪
 
@@ -127,7 +181,7 @@ The key insight here is recognizing the pattern. Did the third task feel more da
 
 You're capable of more than you showed today, and that's not a criticism—it's an invitation. 🌱 Reflect on what "holding back" looks like for you. Is it procrastination? Perfectionism? Fear of failure? Addressing this consciously will accelerate your growth. 📈
 
-These three tasks are crucial because they represent your core commitments—the building blocks of a purposeful life. When you complete them consistently, you build self-trust and create space for bigger achievements. 🏗️${reflectionNote}Your reflection might reveal the real story behind that unfinished task. Use it to plan better tomorrow.`;
+These three tasks are crucial because they represent your core commitments—the building blocks of a purposeful life. When you complete them consistently, you build self-trust and create space for bigger achievements. 🏗️${emotionNote}Regarding your emotions (${emotions.join(', ')}), it's normal to feel mixed after partial completion. Use this as motivation to process those feelings and commit fully tomorrow.${reflectionNote}Your reflection might reveal the real story behind that unfinished task. Use it to plan better tomorrow.`;
     } else if (done === 1) {
       response = `👏 One task down, two to go. You started strong, which is commendable, but the follow-through faded. 💪 Starting is half the battle, but completion is where transformation happens. What shifted between the first task and the others? Energy levels? Motivation? External distractions? 🔍
 
@@ -135,13 +189,13 @@ Be more intentional tomorrow. Before beginning, visualize completing all three. 
 
 This isn't about beating yourself up; it's about understanding your patterns. You have the capability; it's about deploying it consistently. Small adjustments in focus and energy management can make a world of difference. ⚡
 
-Your three daily tasks are the cornerstone of your personal development. They teach you discipline, build resilience, and ensure that you're moving forward, not just spinning in place. By prioritizing them, you're investing in the most important project: yourself. 🧠${reflectionNote}If your reflection explains what derailed you after the first task, use that insight to create safeguards for next time.`;
+Your three daily tasks are the cornerstone of your personal development. They teach you discipline, build resilience, and ensure that you're moving forward, not just spinning in place. By prioritizing them, you're investing in the most important project: yourself. 🧠${emotionNote}Your emotions (${emotions.join(', ')}) might be influencing your energy. Take time to process them—journaling or a short walk can help reset.${reflectionNote}If your reflection explains what derailed you after the first task, use that insight to create safeguards for next time.`;
     } else {
       response = `😌 Zero tasks completed today. This happens to everyone at some point, and it's not the end of the world—but it is a signal. 🚩 Today slipped away without the non-negotiables being addressed. No judgment here, just honest assessment: this pattern, if repeated, won't get you where you want to go. 🛤️
 
 The good news? Tomorrow is a fresh start. 🌅 Use today as motivation to reset with intention. Why did today go this way? Overwhelm? Low energy? Lack of clarity? Identify the root cause and address it proactively. 🔧
 
-Remember, these three tasks are your daily anchor— they ground you in action and prevent the drift of unfulfilled potential. Completing them isn't just about productivity; it's about honoring your word to yourself and building the life you envision. 🏛️${reflectionNote}Your reflection might hold the key to why today was different. Use it to rebuild your commitment.`;
+Remember, these three tasks are your daily anchor— they ground you in action and prevent the drift of unfulfilled potential. Completing them isn't just about productivity; it's about honoring your word to yourself and building the life you envision. 🏛️${emotionNote}Given your emotions (${emotions.join(', ')}), today might have been tough. That's okay—use this reset to acknowledge your feelings and plan for emotional balance tomorrow.${reflectionNote}Your reflection might hold the key to why today was different. Use it to rebuild your commitment.`;
     }
   } else {
     if (done === 3) {
@@ -149,25 +203,25 @@ Remember, these three tasks are your daily anchor— they ground you in action a
 
 What made today work? Replicate it. What almost derailed you? Eliminate it. This is your baseline now—push beyond it. Weakness shows up in the details. Stay vigilant. Execute harder tomorrow. No excuses, no exceptions. 🚫
 
-These tasks are non-negotiable for a reason: they forge your character and ensure you're not wasting your potential. Skip them, and you're just existing—not thriving. 🔥${reflectionNote}If your reflection shows any hesitation or close calls, that's your growth edge. Crush it next time.`;
+These tasks are non-negotiable for a reason: they forge your character and ensure you're not wasting your potential. Skip them, and you're just existing—not thriving. 🔥${emotionNote}Emotions (${emotions.join(', ')}) are irrelevant to execution. Control what you can—your actions. Push through.${reflectionNote}If your reflection shows any hesitation or close calls, that's your growth edge. Crush it next time.`;
     } else if (done === 2) {
       response = `⚠️ Two down, one left unfinished. You chose not to complete it. That's a choice with consequences. 🤷‍♂️ Was it laziness? Distraction? Fear? Own it. You know what needs to be done—finish what you start, regardless of how you feel. 🏁
 
 This half-measure approach is costing you. Momentum builds with completion, not partial effort. Tomorrow, commit fully or don't start. There's no middle ground here. You're better than this inconsistency. Step up. 💪
 
-Your three tasks represent the bare minimum for progress. They build discipline, create habits, and prevent regression. Neglect them, and you're sabotaging your own future. Don't be that person. 🛑${reflectionNote}Your reflection probably explains the excuse. Reject it. Finish strong tomorrow.`;
+Your three tasks represent the bare minimum for progress. They build discipline, create habits, and prevent regression. Neglect them, and you're sabotaging your own future. Don't be that person. 🛑${emotionNote}Emotions (${emotions.join(', ')}) don't excuse incomplete work. Discipline overrides feelings. Execute.${reflectionNote}Your reflection probably explains the excuse. Reject it. Finish strong tomorrow.`;
     } else if (done === 1) {
       response = `😤 Barely showed up. One task? That's not your level. You're capable of so much more than this minimal effort. Stop settling for scraps of progress. If you're serious about change, prove it with action, not words. 💬
 
 This pattern of partial engagement is self-sabotage. Why bother starting if you won't finish? Get real with yourself. Either commit fully or admit you're not ready. Mediocrity is comfortable, but it won't get you anywhere meaningful. 🚶‍♂️
 
-These daily tasks are your litmus test for commitment. They separate the talkers from the doers. By completing them, you're proving to yourself that you're serious about growth and achievement. Fail here, and everything else crumbles. 🧱${reflectionNote}If your reflection justifies this low bar, you're lying to yourself. Raise the standard.`;
+These daily tasks are your litmus test for commitment. They separate the talkers from the doers. By completing them, you're proving to yourself that you're serious about growth and achievement. Fail here, and everything else crumbles. 🧱${emotionNote}Emotions (${emotions.join(', ')}) are not an excuse for low performance. Rise above them. Act.${reflectionNote}If your reflection justifies this low bar, you're lying to yourself. Raise the standard.`;
     } else {
       response = `🚫 Zero. Nothing. Complete avoidance. This is failure by choice, and it's entirely on you. No excuses, no stories, no justifications. You avoided your responsibilities today, and that's unacceptable. 😠
 
 If you want different results, you have to do different things. Stop pretending. Get serious or stay stuck. The choice is yours, but inaction has consequences. Tomorrow demands better. No more hiding. 🙈
 
-These three tasks are your daily declaration of intent. They ensure you're not just dreaming but doing. Skip them consistently, and you're choosing mediocrity over mastery. Wake up. 🔥${reflectionNote}Whatever your reflection says, it's probably an excuse. Cut the bullshit. Execute tomorrow.`;
+These three tasks are your daily declaration of intent. They ensure you're not just dreaming but doing. Skip them consistently, and you're choosing mediocrity over mastery. Wake up. 🔥${emotionNote}Emotions (${emotions.join(', ')}) led to this failure. Take responsibility. Emotions don't control you—you do.${reflectionNote}Whatever your reflection says, it's probably an excuse. Cut the bullshit. Execute tomorrow.`;
     }
   }
 
