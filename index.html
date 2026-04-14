@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Daily Reset</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    margin: 0;
+    padding: 20px;
+    color: #222;
+  }
+  .container {
+    max-width: 400px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  p.subtitle {
+    text-align: center;
+    color: gray;
+    font-size: 14px;
+  }
+  input[type="text"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  textarea {
+    height: 80px;
+  }
+  .task {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: black;
+    color: white;
+    cursor: pointer;
+  }
+  .output {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f1f1f1;
+    border-radius: 8px;
+  }
+  .mode {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Daily Reset</h1>
+  <p class="subtitle">3 things. No excuses.</p>
+
+  <div class="mode">
+    <label><input type="radio" name="mode" value="calm" checked> Calm</label>
+    <label><input type="radio" name="mode" value="strict"> Strict</label>
+  </div>
+
+  <!-- Tasks -->
+  <div class="task">
+    <input type="checkbox" id="t1check">
+    <input type="text" id="t1" placeholder="Task 1">
+  </div>
+
+  <div class="task">
+    <input type="checkbox" id="t2check">
+    <input type="text" id="t2" placeholder="Task 2">
+  </div>
+
+  <div class="task">
+    <input type="checkbox" id="t3check">
+    <input type="text" id="t3" placeholder="Task 3">
+  </div>
+
+  <!-- Reflection -->
+  <textarea id="reflection" placeholder="What did you actually do today?"></textarea>
+
+  <button onclick="generateResponse()">Get Reality Check</button>
+
+  <div class="output" id="output"></div>
+</div>
+
+<script>
+function generateResponse() {
+  let done = 0;
+  if (document.getElementById("t1check").checked) done++;
+  if (document.getElementById("t2check").checked) done++;
+  if (document.getElementById("t3check").checked) done++;
+
+  let mode = document.querySelector('input[name="mode"]:checked').value;
+  let response = "";
+
+  if (mode === "calm") {
+    if (done === 3) {
+      response = "You showed up fully today. Keep this rhythm.";
+    } else if (done === 2) {
+      response = "Good effort. But you know you held back a little.";
+    } else if (done === 1) {
+      response = "You started, but didn’t follow through. Be more intentional.";
+    } else {
+      response = "Today slipped. Tomorrow needs more honesty.";
+    }
+  } else {
+    if (done === 3) {
+      response = "Good. That’s the standard now.";
+    } else if (done === 2) {
+      response = "One task left. You chose not to finish it.";
+    } else if (done === 1) {
+      response = "You barely showed up. That’s not your level.";
+    } else {
+      response = "No excuses. You avoided everything today.";
+    }
+  }
+
+  document.getElementById("output").innerText = response;
+}
+</script>
+
+</body>
+</html>
